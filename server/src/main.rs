@@ -33,6 +33,21 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
         client_addr,
         raw_stream.local_addr().unwrap()
     );
+
+    let mut protocol = HeaderValue::from_static("");
+    let copy_headers_callback =
+        |request: &Request, mut response: Response| -> Result<Response, ErrorResponse> {
+            protocol = request
+                .headers()
+                .get(SEC_WEBSOCKET_PROTOCOL)
+                .expect("the client should specify a protocol")
+                .to_owned();
+
+            response
+                .headers_mut()
+                .insert(SEC_WEBSOCKET_PROTOCOL, protocol.to_owned());
+            Ok(response)
+        };
 }
 
 #[tokio::main]
