@@ -53,6 +53,15 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
         .await
         .expect("Error during the websocket handshake occurred");
     println!("WebSocket connection established: {}", client_addr);
+
+    let (sender, receiver) = unbounded();
+    peer_map.lock().unwrap().insert(
+        client_addr,
+        PeerStruct {
+            protocol: protocol.to_owned(),
+            sender,
+        },
+    );
 }
 
 #[tokio::main]
