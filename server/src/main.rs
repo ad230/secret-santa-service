@@ -1,5 +1,3 @@
-//commit 12
-//messaage and send inside of send_message are realised
 use std::{
     collections::HashMap,
     env,
@@ -160,7 +158,42 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
         let send =
             Message::Text(serde_json::to_string(&message).expect("problem serializing message"));
         println!("New message {}", send.to_text().unwrap());
+
+        let recv_addr_option: Option<SocketAddr> = match recv_cloned {
+            BroadcastRecvEnum::EncryptedRecvType {
+                cipher: _,
+                initialization_vector: _,
+                recv_addr,
+            } => Some(recv_addr),
+            _ => None,
+        };
+
+        let broadcast_recipients = peers
+            .iter()
+            .filter(|(peer_addr, _)| {
+                peer_addr != &&client_addr
+                    && (peers
+                        .get(peer_addr)
+                        .expect("peer_addr should be a key in the HashMap")
+                        .protocol
+                        .to_str()
+                        .expect("expected a string")
+                        == protocol.to_str().expect("expected a string"))
+                    && (match recv_addr_option {
+                        Some(recv_addr) => &&recv_addr == peer_addr,
+                        None => true,
+                    })
+            })
+            .map(|(_, ws_sink)| ws_sink);
+
+        for recp in broadcast_recipients {
+            recp.sender
+                .unbounded_send(send.clone())
+                .expect("Failed to send message");
+        }
     };
+
+    send_message(BroadcastRecvEnum::MetaPreStruct { meta: 0 });
 }
 
 #[tokio::main]
