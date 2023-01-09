@@ -1,3 +1,5 @@
+//commit 12
+//messaage and send inside of send_message are realised
 use std::{
     collections::HashMap,
     env,
@@ -127,6 +129,37 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
         let sender_addr = client_addr.to_owned();
 
         let recv_cloned = recv.clone();
+
+        let message: BroadcastSendEnum = match recv {
+            BroadcastRecvEnum::EncryptedRecvType {
+                cipher,
+                initialization_vector,
+                recv_addr: _,
+            } => BroadcastSendEnum::EncryptedSendType {
+                cipher,
+                initialization_vector,
+                sender_addr,
+            },
+            BroadcastRecvEnum::MetaPreStruct { meta } => {
+                BroadcastSendEnum::MetaSendStruct { meta, sender_addr }
+            }
+            BroadcastRecvEnum::PlaintextRecvStruct { plaintext } => {
+                BroadcastSendEnum::PlaintextSendStruct {
+                    plaintext,
+                    sender_addr,
+                }
+            }
+            BroadcastRecvEnum::PublicKeyRecvStruct { public_key } => {
+                BroadcastSendEnum::PublicKeySendStruct {
+                    public_key,
+                    sender_addr,
+                }
+            }
+        };
+
+        let send =
+            Message::Text(serde_json::to_string(&message).expect("problem serializing message"));
+        println!("New message {}", send.to_text().unwrap());
     };
 }
 
