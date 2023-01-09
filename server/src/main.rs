@@ -31,4 +31,6 @@ async fn main() {
     let state = PeerMap::new(Mutex::new(HashMap::new()));
     
     let try_socket = TcpListener::bind(&server_addr).await;
+    let listener = try_socket.expect("Failed to bind");
+    println!("Listening on: {}", server_addr);
 }
