@@ -48,6 +48,11 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
                 .insert(SEC_WEBSOCKET_PROTOCOL, protocol.to_owned());
             Ok(response)
         };
+
+    let ws_stream = tokio_tungstenite::accept_hdr_async(raw_stream, copy_headers_callback)
+        .await
+        .expect("Error during the websocket handshake occurred");
+    println!("WebSocket connection established: {}", client_addr);
 }
 
 #[tokio::main]
