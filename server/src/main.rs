@@ -217,7 +217,13 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
     pin_mut!(broadcast_incoming, receive_from_others);
     future::select(broadcast_incoming, receive_from_others).await;
 
-    
+    /* DISCONNECTING */
+
+    send_message(BroadcastRecvEnum::MetaPreStruct { meta: 1 });
+
+    let mut peers_disconnect = peer_map.lock().unwrap();
+    println!("{} DISCONNECTED---------------------------", &client_addr);
+    peers_disconnect.remove(&client_addr);
 }
 
 #[tokio::main]
