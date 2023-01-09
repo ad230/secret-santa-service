@@ -64,6 +64,28 @@ enum BroadcastRecvEnum {
     },
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum BroadcastSendEnum {
+    EncryptedSendType {
+        cipher: String,
+        initialization_vector: String,
+        sender_addr: SocketAddr,
+    },
+    MetaSendStruct {
+        meta: u8,
+        sender_addr: SocketAddr,
+    },
+    PlaintextSendStruct {
+        plaintext: String,
+        sender_addr: SocketAddr,
+    },
+    PublicKeySendStruct {
+        public_key: JsonWebKey,
+        sender_addr: SocketAddr,
+    },
+}
+
 async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr: SocketAddr) {
     println!(
         "Incoming TCP connection from: {}, raw stream: {}",
