@@ -27,6 +27,43 @@ struct PeerStruct {
 }
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, PeerStruct>>>;
 
+/* MESSAGE STRUCTS */
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct JsonWebKey {
+    crv: String,
+    ext: bool,
+    key_ops: Vec<String>,
+    kty: String,
+    x: String,
+    y: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct EncryptedRecvStruct {
+    cipher: String,
+    initialization_vector: String,
+    recv_addr: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum BroadcastRecvEnum {
+    EncryptedRecvType {
+        cipher: String,
+        initialization_vector: String,
+        recv_addr: SocketAddr,
+    },
+    MetaPreStruct {
+        meta: u8,
+    },
+    PlaintextRecvStruct {
+        plaintext: String,
+    },
+    PublicKeyRecvStruct {
+        public_key: JsonWebKey,
+    },
+}
+
 async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr: SocketAddr) {
     println!(
         "Incoming TCP connection from: {}, raw stream: {}",
