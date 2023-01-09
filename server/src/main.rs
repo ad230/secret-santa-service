@@ -194,6 +194,30 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
     };
 
     send_message(BroadcastRecvEnum::MetaPreStruct { meta: 0 });
+
+    /* WAITING FOR MESSAGES */
+
+    let (outgoing, incoming) = ws_stream.split();
+
+    let broadcast_incoming = incoming.try_for_each(|msg| {
+        println!(
+            "Received a message from {}: {}",
+            client_addr,
+            msg.to_text().unwrap()
+        );
+
+        if msg.to_text().unwrap() != "" {
+            let recv = serde_json::from_str(msg.to_text().unwrap()).unwrap();
+            send_message(recv);
+        }
+
+        future::ok(())
+    });
+    let receive_from_others = receiver.map(Ok).forward(outgoing);
+    pin_mut!(broadcast_incoming, receive_from_others);
+    future::select(broadcast_incoming, receive_from_others).await;
+
+    
 }
 
 #[tokio::main]
