@@ -99,6 +99,13 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
             sender,
         },
     );
+
+    let send_message = |recv: BroadcastRecvEnum| {
+        let peers = peer_map.lock().unwrap();
+        let sender_addr = client_addr.to_owned();
+
+        let recv_cloned = recv.clone();
+    };
 }
 
 #[tokio::main]
