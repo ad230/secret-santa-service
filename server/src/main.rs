@@ -23,10 +23,12 @@ struct PeerStruct {
 }
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, PeerStruct>>>;
 
-fn main() {
-    // Get the port number to listen on (required for heroku deployment).
+#[tokio::main]
+async fn main() {
     let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let server_addr = format!("0.0.0.0:{}", port);
 
     let state = PeerMap::new(Mutex::new(HashMap::new()));
+    
+    let try_socket = TcpListener::bind(&server_addr).await;
 }
