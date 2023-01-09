@@ -227,17 +227,18 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, client_addr
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), IoError> {
     let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let server_addr = format!("0.0.0.0:{}", port);
 
     let state = PeerMap::new(Mutex::new(HashMap::new()));
-    
+
     let try_socket = TcpListener::bind(&server_addr).await;
     let listener = try_socket.expect("Failed to bind");
     println!("Listening on: {}", server_addr);
 
     while let Ok((stream, client_addr)) = listener.accept().await {
+        tokio::spawn(handle_connection(state.clone(), stream, client_addr));
     }
 
     Ok(())

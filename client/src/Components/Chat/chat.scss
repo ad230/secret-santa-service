@@ -1,0 +1,59 @@
+$margin: 20px;
+
+@mixin small-gray-text {
+  margin-bottom: 5px;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.message-container {
+  .message {
+    display: flex;
+    flex-direction: row;
+    text-align: left;
+
+    .sender {
+      margin-top: $margin;
+      @include small-gray-text;
+    }
+
+    .content {
+      display: inline-block;
+      margin-bottom: 5px;
+      padding: 0.5em;
+      border-radius: 5px;
+      background-color: gray;
+      color: white;
+
+      .chatPre {
+        font-style: inherit;
+        font-family: inherit;
+        margin: 0;
+      }
+    }
+
+    &.self {
+      flex-direction: row-reverse;
+      text-align: right;
+
+      .content {
+        background-color: #17A589;
+      }
+    }
+
+    &.meta {
+      flex-direction: row;
+      justify-content: center;
+      text-align: center;
+
+      .sender {
+        display: none;
+      }
+      .content {
+        @include small-gray-text;
+        background: none;
+        font-style: italic;
+      }
+    }
+  }
+}
